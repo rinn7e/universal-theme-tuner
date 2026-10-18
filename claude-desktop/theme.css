@@ -1,0 +1,187 @@
+/* Claude desktop app: Solarized Light
+ *
+ * Recolors the app's light mode with Solarized Light, matched to VS Code's
+ * Solarized Light: the cream base3 canvas (VS Code's editor and terminal),
+ * the beige base2 frame and sidebar (VS Code's sidebar, title and status
+ * bars), base2 menus and popovers (VS Code's widgets), base3 search and input
+ * fields, and VS Code's #DFCA88 list selection and hovers. No surface is left
+ * white or cool gray. Dark mode stays stock.
+ *
+ * Text and accent shades are the Solarized hues darkened just enough to pass
+ * WCAG AA (4.5:1) on both base2 and base3, so they read a little deeper than
+ * Solarized's own base01/base00/orange.
+ *
+ * Works by overriding the app's own design-system variables (--cds-*, the
+ * Code tab frame's --df-*, and claude.ai's older --bg-* and --text-*), the
+ * approach and selector structure of the Clay theme by Maxime Bories (MIT,
+ * see LICENSE-clay). Applied through the DevTools snippet, see README.md.
+ */
+
+html.cds-root {
+  /* ===== SOLARIZED LIGHT PALETTE ===== */
+  --sol-bg-0: #eee8d5;                              /* base2: frame, sidebar, menus (VS Code sidebar, widgets) */
+  --sol-bg-1: #fdf6e3;                              /* base3: canvas, composer, panes (VS Code editor, terminal) */
+  --sol-bg-2: #f5efdc;                              /* between base3 and base2: cards, inputs, raised surfaces */
+  --sol-bg-3: #e4ddc8;                              /* pressed and stronger fills */
+  --sol-text: #073642;                              /* base02: primary text, 10.6:1 */
+  --sol-text-2: #455f67;                            /* base01 darkened: secondary text, 5.5:1 */
+  --sol-text-3: #516b74;                            /* base00 darkened: muted text, 4.6:1 */
+  --sol-border: rgba(88, 110, 117, 0.22);           /* hairlines, base01 tint */
+  --sol-border-strong: rgba(88, 110, 117, 0.40);    /* inputs, dividers */
+  --sol-accent: #ad461b;                            /* orange darkened: links, focus, 4.7:1 */
+  --sol-accent-hover: #94421f;                      /* hover state of accent, 5.6:1 */
+  --sol-accent-soft: rgba(203, 75, 22, 0.14);       /* accent washes and chips */
+  --sol-selected: #dfca88;                          /* VS Code Solarized list.activeSelectionBackground */
+  --sol-hover: rgba(223, 202, 136, 0.27);           /* VS Code Solarized list.hoverBackground (#DFCA8844) */
+}
+
+/* ---------- light ---------- */
+html.cds-root[data-mode="light"],
+html[data-mode="light"] .cds-root:not([data-mode="dark"]):not([data-mode="system"]) {
+  --cds-surface-0: var(--sol-bg-0);
+  --cds-surface-1: var(--sol-bg-1);
+  --cds-surface-2: var(--sol-bg-1);
+  --cds-surface-3: var(--sol-bg-2);
+  --cds-surface-panel: var(--sol-bg-1);
+  --cds-surface-popover: var(--sol-bg-0);
+  --cds-bg-neutral: rgba(88, 110, 117, 0.08);
+  --cds-bg-neutral-hover: rgba(88, 110, 117, 0.14);
+  --cds-bg-user-message: rgba(181, 137, 0, 0.10);
+  --cds-text-primary: var(--sol-text);
+  --cds-text-secondary: var(--sol-text-2);
+  --cds-text-muted: var(--sol-text-3);
+  --cds-border: var(--sol-border);
+  --cds-border-strong: var(--sol-border-strong);
+  --cds-border-stronger: var(--sol-border-strong);
+  --cds-role-accent-400: var(--sol-accent);
+  --cds-role-accent-450: var(--sol-accent-hover);
+  --cds-role-accent-600: var(--sol-accent);
+  --cds-text-accent: var(--sol-accent);
+  --cds-bg-accent: var(--sol-accent-soft);
+  --cds-bg-accent-muted: var(--sol-accent-soft);
+  --cds-bg-accent-chip: var(--sol-accent-soft);
+  --cds-border-accent: var(--sol-accent);
+  --cds-bg-highlight: var(--sol-accent-soft);
+  /* fields and neutral fills: half-white and cool-gray tints by default */
+  --cds-fill-field: var(--sol-bg-1);                /* search and input fields: base3 */
+  --cds-alpha-1: rgba(181, 137, 0, 0.07);           /* neutral washes, tinted Solarized yellow */
+  --cds-alpha-2: rgba(181, 137, 0, 0.12);
+  --cds-alpha-3: rgba(181, 137, 0, 0.18);
+  --cds-fill-ghost-hover: var(--sol-hover);
+  --cds-fill-ghost-selected: rgba(223, 202, 136, 0.55);
+  --cds-fill-secondary-hover: var(--sol-hover);
+  /* claude.ai's older tokens (HSL triples), still used in a few places */
+  --bg-000: 43.8 86.7% 94.1%;                       /* base3 */
+  --bg-100: 43.8 86.7% 94.1%;                       /* base3 */
+  --bg-200: 45.6 55.6% 91.2%;                       /* #f5efdc */
+  --bg-300: 45.6 42.4% 88.4%;                       /* base2 */
+  --bg-400: 45.0 34.1% 83.9%;                       /* #e4ddc8 */
+  --bg-500: 45.0 29.2% 81.2%;                       /* #ddd6c1 */
+  --text-000: 192.2 80.8% 14.3%;                    /* #073642 */
+  --text-100: 192.2 80.8% 14.3%;
+  --text-200: 194.1 19.8% 33.7%;                    /* #455f67 */
+  --text-300: 194.1 19.8% 33.7%;
+  --border-300: 45.0 29.2% 81.2%;                   /* #ddd6c1 */
+  accent-color: var(--sol-accent);
+}
+
+@media (prefers-color-scheme: light) {
+  html.cds-root[data-mode="system"],
+  html[data-mode="system"] .cds-root:not([data-mode="light"]):not([data-mode="dark"]) {
+  --cds-surface-0: var(--sol-bg-0);
+  --cds-surface-1: var(--sol-bg-1);
+  --cds-surface-2: var(--sol-bg-1);
+  --cds-surface-3: var(--sol-bg-2);
+  --cds-surface-panel: var(--sol-bg-1);
+  --cds-surface-popover: var(--sol-bg-0);
+  --cds-bg-neutral: rgba(88, 110, 117, 0.08);
+  --cds-bg-neutral-hover: rgba(88, 110, 117, 0.14);
+  --cds-bg-user-message: rgba(181, 137, 0, 0.10);
+  --cds-text-primary: var(--sol-text);
+  --cds-text-secondary: var(--sol-text-2);
+  --cds-text-muted: var(--sol-text-3);
+  --cds-border: var(--sol-border);
+  --cds-border-strong: var(--sol-border-strong);
+  --cds-border-stronger: var(--sol-border-strong);
+  --cds-role-accent-400: var(--sol-accent);
+  --cds-role-accent-450: var(--sol-accent-hover);
+  --cds-role-accent-600: var(--sol-accent);
+  --cds-text-accent: var(--sol-accent);
+  --cds-bg-accent: var(--sol-accent-soft);
+  --cds-bg-accent-muted: var(--sol-accent-soft);
+  --cds-bg-accent-chip: var(--sol-accent-soft);
+  --cds-border-accent: var(--sol-accent);
+  --cds-bg-highlight: var(--sol-accent-soft);
+  /* fields and neutral fills: half-white and cool-gray tints by default */
+  --cds-fill-field: var(--sol-bg-1);                /* search and input fields: base3 */
+  --cds-alpha-1: rgba(181, 137, 0, 0.07);           /* neutral washes, tinted Solarized yellow */
+  --cds-alpha-2: rgba(181, 137, 0, 0.12);
+  --cds-alpha-3: rgba(181, 137, 0, 0.18);
+  --cds-fill-ghost-hover: var(--sol-hover);
+  --cds-fill-ghost-selected: rgba(223, 202, 136, 0.55);
+  --cds-fill-secondary-hover: var(--sol-hover);
+  --bg-000: 43.8 86.7% 94.1%;
+  --bg-100: 43.8 86.7% 94.1%;
+  --bg-200: 45.6 55.6% 91.2%;
+  --bg-300: 45.6 42.4% 88.4%;
+  --bg-400: 45.0 34.1% 83.9%;
+  --bg-500: 45.0 29.2% 81.2%;
+  --text-000: 192.2 80.8% 14.3%;
+  --text-100: 192.2 80.8% 14.3%;
+  --text-200: 194.1 19.8% 33.7%;
+  --text-300: 194.1 19.8% 33.7%;
+  --border-300: 45.0 29.2% 81.2%;
+  accent-color: var(--sol-accent);
+  }
+}
+
+/* ---------- Code tab frame (--df-*) ----------
+ * The frame keeps its own layer: a gray scale --df-z0..z6 (HSL triples, z0 =
+ * white, used by cards via --df-surface-primary), the page and sidebar
+ * backgrounds, and the session rows' --df-selected / --df-hover, which it
+ * pins with compound selectors (the sidebar and cards set --df-sidebar-bg to
+ * white). The web sidebar otherwise paints a 50/50 mix of frame and canvas.
+ * These rules repeat that structure under html[data-mode] so they win on
+ * specificity. */
+html[data-mode="light"] .dframe-root,
+html[data-mode="light"] .dframe-root .dframe-sidebar,
+html[data-mode="light"] .dframe-root[data-variant] .dframe-sidebar,
+html[data-mode="light"] .dframe-root .dframe-card,
+html[data-mode="light"] .dframe-root .df-session-list,
+html[data-mode="light"] .dframe-root .df-session-list[data-list-section] {
+  --df-z0: 43.8 86.7% 94.1%;                        /* base3 */
+  --df-z1: 45.6 55.6% 91.2%;                        /* #f5efdc */
+  --df-z2: 45.6 42.4% 88.4%;                        /* base2 */
+  --df-z3: 45.0 34.1% 83.9%;                        /* #e4ddc8 */
+  --df-z4: 45.0 29.2% 81.2%;                        /* #ddd6c1 */
+  --df-z5: 180.0 6.9% 60.4%;                        /* base1 */
+  --df-z6: 196.0 12.9% 45.5%;                       /* base00 */
+  --df-bg-page-hsl: 45.6 42.4% 88.4%;               /* base2 */
+  --df-sidebar-bg: var(--sol-bg-0);
+  --df-web-sidebar-bg: var(--sol-bg-0);
+  --df-hover: var(--sol-hover);
+  --df-selected: var(--sol-selected);
+  --df-selected-base: var(--sol-selected);
+}
+@media (prefers-color-scheme: light) {
+  html[data-mode="system"] .dframe-root,
+  html[data-mode="system"] .dframe-root .dframe-sidebar,
+  html[data-mode="system"] .dframe-root[data-variant] .dframe-sidebar,
+  html[data-mode="system"] .dframe-root .dframe-card,
+  html[data-mode="system"] .dframe-root .df-session-list,
+  html[data-mode="system"] .dframe-root .df-session-list[data-list-section] {
+  --df-z0: 43.8 86.7% 94.1%;
+  --df-z1: 45.6 55.6% 91.2%;
+  --df-z2: 45.6 42.4% 88.4%;
+  --df-z3: 45.0 34.1% 83.9%;
+  --df-z4: 45.0 29.2% 81.2%;
+  --df-z5: 180.0 6.9% 60.4%;
+  --df-z6: 196.0 12.9% 45.5%;
+  --df-bg-page-hsl: 45.6 42.4% 88.4%;
+  --df-sidebar-bg: var(--sol-bg-0);
+  --df-web-sidebar-bg: var(--sol-bg-0);
+  --df-hover: var(--sol-hover);
+  --df-selected: var(--sol-selected);
+  --df-selected-base: var(--sol-selected);
+  }
+}

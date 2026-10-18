@@ -15,7 +15,8 @@
     "onStartupFinished"
   ],
   "scripts": {
-    "build": "node scripts/build.js && node scripts/palette.js"
+    "build": "node scripts/build.js && node scripts/palette.js",
+    "build:claude": "node claude-desktop/build.js"
   },
   "contributes": {
     "commands": [
