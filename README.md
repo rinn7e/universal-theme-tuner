@@ -1,6 +1,6 @@
-# Solarized workspace
+# Universal Theme Tuner
 
-Solarized themes and tools, one package each:
+Theme tuners and themes for the apps you use, one package each:
 
 | Package | What it is |
 | --- | --- |

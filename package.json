@@ -1,7 +1,7 @@
 {
-  "name": "solarized-workspace",
+  "name": "universal-theme-tuner",
   "private": true,
-  "description": "Solarized themes and tools: a VS Code theme tuner, a Claude desktop theme and a website extension",
+  "description": "Theme tuners and themes for the apps you use: VS Code, the Claude desktop app and websites",
   "packageManager": "pnpm@11.9.0",
   "scripts": {
     "build": "pnpm -r run build",
