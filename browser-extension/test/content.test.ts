@@ -288,4 +288,30 @@ describe('content script', () => {
       document.getElementById('solarize-extension-style')!.textContent,
     ).toContain('[data-solarize-reading]')
   })
+
+  it('recolors a fade to white and leaves colorful gradients', async () => {
+    document.head.innerHTML = `<style>
+      .fade { background-image: linear-gradient(rgba(0, 0, 0, 0), rgb(255, 255, 255)); }
+      .brand { background-image: linear-gradient(rgb(49, 134, 255), rgb(255, 255, 255)); }
+    </style>`
+    document.body.innerHTML =
+      '<div class="fade" id="fade">fade</div><div class="brand" id="brand">brand</div><div class="fade" id="fade2">fade</div>'
+    await loadScript()
+    const id = document
+      .getElementById('fade')!
+      .getAttribute('data-solarize-gradient')
+    expect(id).not.toBeNull()
+    // Identical fades share one rule
+    expect(
+      document.getElementById('fade2')!.getAttribute('data-solarize-gradient'),
+    ).toBe(id)
+    expect(
+      document.getElementById('brand')!.hasAttribute('data-solarize-gradient'),
+    ).toBe(false)
+    expect(
+      document.getElementById('solarize-extension-style')!.textContent,
+    ).toContain(
+      `[data-solarize-gradient="${id}"]{background-image:linear-gradient(rgba(0, 0, 0, 0), rgb(253, 246, 227)) !important}`,
+    )
+  })
 })

@@ -8,8 +8,10 @@ the Solarized palette:
 - **Dark pages:** black and dark-gray backgrounds become Solarized Dark
   (`#002b36`, `#073642`, `#0d4251`)
 
-Colored backgrounds (buttons, brand colors), images, gradients and translucent
-overlays are left alone, so sites keep their identity.
+Gray gradients, like a fade to white under a "Show more" button, are recolored
+too, keeping their transparency. Colored backgrounds (buttons, brand colors),
+images, colorful gradients and translucent overlays are left alone, so sites
+keep their identity.
 
 ## Popup
 

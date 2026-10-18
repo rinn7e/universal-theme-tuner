@@ -7,6 +7,7 @@ import {
   TONE_COLORS,
   type Tone,
   animatesBackground,
+  recolorGradient,
   toneFor,
 } from '../common/solarized'
 import {
@@ -28,6 +29,10 @@ const STYLE_ID = 'solarize-extension-style'
 // (Damn Center's pads fade in): it pauses transitions so the read gives the
 // color the page is heading to, not a frame of the fade
 const READING_ATTR = 'data-solarize-reading'
+
+// Elements whose background-image is a neutral gradient (a fade to white)
+// carry this attribute; each distinct recolored gradient gets one rule
+const GRADIENT_ATTR = 'data-solarize-gradient'
 
 // Elements recolored per batch; each batch strips, reads, then writes so the
 // browser recalculates styles once per batch instead of once per element
@@ -59,6 +64,8 @@ let observedBody = false
 const pending = new Set<Element>()
 let scheduled = false
 let restyleTimer: ReturnType<typeof setTimeout> | undefined
+// Recolored gradient -> its rule's id, so identical fades share one rule
+const gradientIds = new Map<string, string>()
 
 const isOn = () => modes.light || modes.dark
 
@@ -82,7 +89,24 @@ const ensureStyle = () => {
   document.documentElement.prepend(style)
 }
 
-const removeStyle = () => document.getElementById(STYLE_ID)?.remove()
+const removeStyle = () => {
+  document.getElementById(STYLE_ID)?.remove()
+  gradientIds.clear()
+}
+
+// The id of the rule painting this recolored gradient, adding the rule to
+// our layer the first time
+const gradientId = (gradient: string): string => {
+  const known = gradientIds.get(gradient)
+  if (known) return known
+  const id = `g${gradientIds.size}`
+  gradientIds.set(gradient, id)
+  const style = document.getElementById(STYLE_ID)
+  if (style) {
+    style.textContent += `\n@layer ${LAYER}{[${GRADIENT_ATTR}="${id}"]{background-image:${gradient} !important}}`
+  }
+  return id
+}
 
 const queueTree = (root: Element) => {
   pending.add(root)
@@ -126,11 +150,15 @@ const recolorBatch = (batch: Element[]) => {
   })
   // 2. Strip earlier tags so the page's own colors are read, and pause the
   // animated ones so they read as their final color
-  const stripped = batch.filter((el) => el.hasAttribute(ATTR))
-  stripped.forEach((el) => el.removeAttribute(ATTR))
+  batch.forEach((el) => {
+    el.removeAttribute(ATTR)
+    el.removeAttribute(GRADIENT_ATTR)
+  })
   animated.forEach((el) => el.setAttribute(READING_ATTR, ''))
   // 3. Read every background before writing anything
-  const backgrounds = batch.map((el) => getComputedStyle(el).backgroundColor)
+  const styles = batch.map((el) => getComputedStyle(el))
+  const backgrounds = styles.map((style) => style.backgroundColor)
+  const images = styles.map((style) => style.backgroundImage)
   const root = document.documentElement
   const bodyBackground =
     batch.includes(root) && document.body
@@ -145,6 +173,8 @@ const recolorBatch = (batch: Element[]) => {
           canvasTone(backgrounds[i], bodyBackground))
         : toneFor(backgrounds[i], modes)
     if (tone) el.setAttribute(ATTR, tone)
+    const gradient = recolorGradient(images[i], modes)
+    if (gradient) el.setAttribute(GRADIENT_ATTR, gradientId(gradient))
   })
 }
 
@@ -214,7 +244,7 @@ const restyleSoon = () => {
 }
 
 const onThemeMutations = (mutations: MutationRecord[]) => {
-  const ours = [ATTR, READING_ATTR]
+  const ours = [ATTR, READING_ATTR, GRADIENT_ATTR]
   if (mutations.some((m) => !ours.includes(m.attributeName ?? ''))) rescan()
 }
 
@@ -254,9 +284,10 @@ const stopObserving = () => {
 
 const clearAll = () => {
   pending.clear()
-  document
-    .querySelectorAll(`[${ATTR}]`)
-    .forEach((el) => el.removeAttribute(ATTR))
+  document.querySelectorAll(`[${ATTR}], [${GRADIENT_ATTR}]`).forEach((el) => {
+    el.removeAttribute(ATTR)
+    el.removeAttribute(GRADIENT_ATTR)
+  })
 }
 
 export const apply = (next: Modes) => {

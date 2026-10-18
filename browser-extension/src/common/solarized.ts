@@ -108,6 +108,51 @@ export const toneFor = (value: string, modes: Modes): Tone | null => {
   return null
 }
 
+const hexToRgb = (hex: string): Rgba => ({
+  r: parseInt(hex.slice(1, 3), 16),
+  g: parseInt(hex.slice(3, 5), 16),
+  b: parseInt(hex.slice(5, 7), 16),
+  a: 1,
+})
+
+// Every color token in a computed value (computed styles spell colors as
+// rgb()/rgba())
+const COLOR_TOKEN = /rgba?\([^)]*\)/g
+
+// A computed background-image with its gradient stops swapped for Solarized
+// tones, keeping each stop's transparency, or null to leave it alone. Only
+// gradients whose visible stops are all grays in an enabled band are swapped
+// (fades to white, like Google's "Show more"); images and gradients with any
+// colored stop keep their design
+export const recolorGradient = (image: string, modes: Modes): string | null => {
+  if (!image.includes('gradient(') || image.includes('url(')) return null
+  let changed = false
+  let keep = false
+  const result = image.replace(COLOR_TOKEN, (token) => {
+    const c = parseColor(token)
+    if (!c) {
+      keep = true
+      return token
+    }
+    // Fully transparent stops only shape the fade
+    if (c.a === 0) return token
+    const opaque = { ...c, a: 1 }
+    const tone =
+      (modes.light ? lightToneFor(opaque) : null) ??
+      (modes.dark ? darkToneFor(opaque) : null)
+    if (!tone) {
+      keep = true
+      return token
+    }
+    changed = true
+    const { r, g, b } = hexToRgb(TONE_COLORS[tone])
+    return c.a === 1
+      ? `rgb(${r}, ${g}, ${b})`
+      : `rgba(${r}, ${g}, ${b}, ${c.a})`
+  })
+  return changed && !keep ? result : null
+}
+
 // Seconds or milliseconds in a CSS time value, as milliseconds
 const toMs = (time: string): number =>
   time.endsWith('ms') ? parseFloat(time) : parseFloat(time) * 1000

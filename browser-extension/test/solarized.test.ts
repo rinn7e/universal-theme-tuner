@@ -10,6 +10,7 @@ import {
   isNeutral,
   lightToneFor,
   parseColor,
+  recolorGradient,
   toneFor,
 } from '../src/common/solarized'
 
@@ -122,5 +123,54 @@ describe('animatesBackground', () => {
 
   it('repeats a shorter duration list, as CSS does', () => {
     expect(animatesBackground('width, background-color', '0.2s')).toBe(true)
+  })
+})
+
+describe('recolorGradient', () => {
+  const light = { light: true, dark: false }
+
+  it("recolors a fade to white, keeping each stop's transparency", () => {
+    // Google's "Show more" fade
+    expect(
+      recolorGradient(
+        'linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(255, 255, 255, 0.9) 52px, rgb(255, 255, 255) 80px)',
+        light,
+      ),
+    ).toBe(
+      'linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(253, 246, 227, 0.9) 52px, rgb(253, 246, 227) 80px)',
+    )
+  })
+
+  it('recolors dark fades in dark mode only', () => {
+    const fade = 'linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0))'
+    expect(recolorGradient(fade, light)).toBeNull()
+    expect(recolorGradient(fade, { light: false, dark: true })).toBe(
+      'linear-gradient(rgba(0, 0, 0, 0), rgb(0, 43, 54))',
+    )
+  })
+
+  it('leaves gradients with a colored stop, images and plain values alone', () => {
+    expect(
+      recolorGradient(
+        'conic-gradient(rgb(49, 134, 255) 34%, rgb(255, 255, 255) 50%)',
+        light,
+      ),
+    ).toBeNull()
+    expect(
+      recolorGradient(
+        'url("a.png"), linear-gradient(rgb(255, 255, 255), rgb(255, 255, 255))',
+        light,
+      ),
+    ).toBeNull()
+    expect(recolorGradient('none', light)).toBeNull()
+  })
+
+  it('leaves gradients with only transparent stops alone', () => {
+    expect(
+      recolorGradient(
+        'linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))',
+        light,
+      ),
+    ).toBeNull()
   })
 })
