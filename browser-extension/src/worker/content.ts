@@ -2,6 +2,7 @@
  * Copyright (C) 2026 Moremi Vannak
  * SPDX-License-Identifier: GPL-3.0-only
  */
+import { SHADOW_EVENT } from '../common/shadow'
 import {
   type Modes,
   TONE_COLORS,
@@ -66,27 +67,64 @@ let scheduled = false
 let restyleTimer: ReturnType<typeof setTimeout> | undefined
 // Recolored gradient -> its rule's id, so identical fades share one rule
 const gradientIds = new Map<string, string>()
+// Shadow roots we recolor inside: each gets our rules and is observed
+const knownRoots = new Set<ShadowRoot>()
+// One constructed copy of our rules, adopted by every shadow root; null where
+// constructed stylesheets aren't available
+let sharedSheet: CSSStyleSheet | null = null
+// Shadow roots that refused the adopted sheet get their own <style> instead
+const fallbackStyles = new Set<HTMLStyleElement>()
+
+const OBSERVE_OPTIONS: MutationObserverInit = {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['class', 'style'],
+}
 
 const isOn = () => modes.light || modes.dark
 
-const ensureStyle = () => {
-  if (document.getElementById(STYLE_ID)) return
-  const style = document.createElement('style')
-  style.id = STYLE_ID
-  // Dark Reader leaves stylesheets with this class alone (its courtesy to the
-  // Stylus extension), so it neither rewrites nor removes our colors
-  style.className = 'stylus'
+// All our rules: the tones, the pause for animated reads and one rule per
+// recolored gradient
+const styleText = () => {
   const rules = [
     ...Object.entries(TONE_COLORS).map(
       ([tone, color]) =>
         `[${ATTR}="${tone}"]{background-color:${color} !important}`,
     ),
     `[${READING_ATTR}]{transition:none !important}`,
+    ...[...gradientIds].map(
+      ([gradient, id]) =>
+        `[${GRADIENT_ATTR}="${id}"]{background-image:${gradient} !important}`,
+    ),
   ]
-  style.textContent = `@layer ${LAYER}{\n${rules.join('\n')}\n}`
+  return `@layer ${LAYER}{\n${rules.join('\n')}\n}`
+}
+
+// Dark Reader leaves stylesheets with this class alone (its courtesy to the
+// Stylus extension), so it neither rewrites nor removes our colors
+const createStyle = () => {
+  const style = document.createElement('style')
+  style.id = STYLE_ID
+  style.className = 'stylus'
+  style.textContent = styleText()
+  return style
+}
+
+const ensureStyle = () => {
+  if (document.getElementById(STYLE_ID)) return
   // First in the document, so our layer is declared before any other
   // (<head> may not exist yet at document_start)
-  document.documentElement.prepend(style)
+  document.documentElement.prepend(createStyle())
+}
+
+// Brings every copy of our rules up to date
+const refreshStyles = () => {
+  const text = styleText()
+  const style = document.getElementById(STYLE_ID)
+  if (style) style.textContent = text
+  sharedSheet?.replaceSync(text)
+  fallbackStyles.forEach((fallback) => (fallback.textContent = text))
 }
 
 const removeStyle = () => {
@@ -101,17 +139,94 @@ const gradientId = (gradient: string): string => {
   if (known) return known
   const id = `g${gradientIds.size}`
   gradientIds.set(gradient, id)
-  const style = document.getElementById(STYLE_ID)
-  if (style) {
-    style.textContent += `\n@layer ${LAYER}{[${GRADIENT_ATTR}="${id}"]{background-image:${gradient} !important}}`
-  }
+  refreshStyles()
   return id
 }
 
-const queueTree = (root: Element) => {
-  pending.add(root)
-  const all = root.getElementsByTagName('*')
-  for (let i = 0; i < all.length; i++) pending.add(all[i])
+const getSharedSheet = (): CSSStyleSheet | null => {
+  if (!sharedSheet && typeof CSSStyleSheet === 'function') {
+    try {
+      sharedSheet = new CSSStyleSheet()
+      sharedSheet.replaceSync(styleText())
+    } catch {
+      sharedSheet = null
+    }
+  }
+  return sharedSheet
+}
+
+// Gives a shadow root our rules: the shared adopted sheet, or a <style> of
+// its own where adopting fails (Firefox content scripts can refuse it)
+const addStyleTo = (root: ShadowRoot) => {
+  const sheet = getSharedSheet()
+  if (sheet) {
+    try {
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet]
+      return
+    } catch {
+      // Fall through to a <style> element
+    }
+  }
+  const style = createStyle()
+  fallbackStyles.add(style)
+  root.prepend(style)
+}
+
+const removeStyleFrom = (root: ShadowRoot) => {
+  try {
+    root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
+      (sheet) => sheet !== sharedSheet,
+    )
+  } catch {
+    // Never adopted
+  }
+  root.querySelector(`#${STYLE_ID}`)?.remove()
+}
+
+// An element's shadow root, open or closed. Closed roots need the extension
+// APIs: chrome.dom in Chrome, openOrClosedShadowRoot in Firefox. Looking them
+// up costs a call, so a scan only asks custom elements (`thorough` asks any)
+const shadowRootOf = (el: Element, thorough = false): ShadowRoot | null => {
+  if (el.shadowRoot) return el.shadowRoot
+  if (!(el instanceof HTMLElement)) return null
+  if (!thorough && !el.localName.includes('-')) return null
+  if (typeof chrome !== 'undefined' && chrome.dom?.openOrClosedShadowRoot) {
+    return chrome.dom.openOrClosedShadowRoot(el) ?? null
+  }
+  return (
+    (el as Element & { openOrClosedShadowRoot?: ShadowRoot | null })
+      .openOrClosedShadowRoot ?? null
+  )
+}
+
+// Starts recoloring inside a shadow root: our rules, an observer, a scan
+const enterRoot = (root: ShadowRoot) => {
+  if (knownRoots.has(root)) return
+  knownRoots.add(root)
+  addStyleTo(root)
+  observer?.observe(root, OBSERVE_OPTIONS)
+  queueTree(root)
+}
+
+const leaveRoots = () => {
+  knownRoots.forEach(removeStyleFrom)
+  knownRoots.clear()
+  fallbackStyles.clear()
+}
+
+// Queues an element (or shadow root) and everything inside it, stepping into
+// shadow roots on the way
+const queueTree = (root: Element | ShadowRoot, thorough = false) => {
+  if (root instanceof Element) {
+    pending.add(root)
+    const own = shadowRootOf(root, thorough)
+    if (own) enterRoot(own)
+  }
+  root.querySelectorAll('*').forEach((el) => {
+    pending.add(el)
+    const inner = shadowRootOf(el)
+    if (inner) enterRoot(inner)
+  })
   schedule()
 }
 
@@ -263,12 +378,7 @@ const startObserving = () => {
     }
     onMutations(mutations)
   })
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'style'],
-  })
+  observer.observe(document.documentElement, OBSERVE_OPTIONS)
   themeObserver = new MutationObserver(onThemeMutations)
   observedBody = Boolean(document.body)
   observeTheme()
@@ -284,10 +394,13 @@ const stopObserving = () => {
 
 const clearAll = () => {
   pending.clear()
-  document.querySelectorAll(`[${ATTR}], [${GRADIENT_ATTR}]`).forEach((el) => {
-    el.removeAttribute(ATTR)
-    el.removeAttribute(GRADIENT_ATTR)
-  })
+  const roots: Array<Document | ShadowRoot> = [document, ...knownRoots]
+  roots.forEach((root) =>
+    root.querySelectorAll(`[${ATTR}], [${GRADIENT_ATTR}]`).forEach((el) => {
+      el.removeAttribute(ATTR)
+      el.removeAttribute(GRADIENT_ATTR)
+    }),
+  )
 }
 
 export const apply = (next: Modes) => {
@@ -300,6 +413,7 @@ export const apply = (next: Modes) => {
   } else {
     stopObserving()
     removeStyle()
+    leaveRoots()
   }
 }
 
@@ -349,6 +463,19 @@ document.addEventListener(
     if (event.target instanceof Node && isStyleSheet(event.target)) {
       restyleSoon()
     }
+  },
+  true,
+)
+
+// A shadow root attached to an element already on the page (a web component
+// upgrading in place) changes nothing we observe; the main-world hook
+// announces it on the host. composedPath()[0] is the host even inside other
+// shadow roots
+document.addEventListener(
+  SHADOW_EVENT,
+  (event) => {
+    const host = event.composedPath()[0]
+    if (isOn() && host instanceof Element) queueTree(host, true)
   },
   true,
 )

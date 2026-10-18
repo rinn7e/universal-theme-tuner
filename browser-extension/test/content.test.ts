@@ -16,6 +16,8 @@ type ChangeListener = (changes: Record<string, unknown>, area: string) => void
 let store: Record<string, unknown> = {}
 let changeListeners: ChangeListener[] = []
 let themeListeners: Array<() => void> = []
+// Closed shadow roots, reachable only through the stubbed chrome.dom
+const closedRoots = new WeakMap<Element, ShadowRoot>()
 
 // Observers each loaded copy of the script starts, disconnected after every
 // test so one test's script can't react to a later test's page
@@ -39,6 +41,10 @@ const installChrome = () => {
       onChanged: {
         addListener: (fn: ChangeListener) => changeListeners.push(fn),
       },
+    },
+    dom: {
+      openOrClosedShadowRoot: (el: HTMLElement) =>
+        el.shadowRoot ?? closedRoots.get(el) ?? null,
     },
   })
   vi.stubGlobal('MutationObserver', RecordedMutationObserver)
@@ -313,5 +319,79 @@ describe('content script', () => {
     ).toContain(
       `[data-solarize-gradient="${id}"]{background-image:linear-gradient(rgba(0, 0, 0, 0), rgb(253, 246, 227)) !important}`,
     )
+  })
+
+  // A web component host with a shadow root holding a white panel
+  const addHost = (id: string, mode: ShadowRootMode) => {
+    const host = document.createElement('x-card')
+    host.id = id
+    const root = host.attachShadow({ mode })
+    if (mode === 'closed') closedRoots.set(host, root)
+    root.innerHTML =
+      '<div class="panel" style="background-color: #ffffff">panel</div>'
+    return { host, root }
+  }
+
+  // jsdom has no adoptedStyleSheets, so there the <style> fallback is used
+  const hasOurRules = (root: ShadowRoot) =>
+    (root.adoptedStyleSheets?.length ?? 0) > 0 ||
+    root.querySelector('#solarize-extension-style') !== null
+
+  it('recolors inside open shadow roots and gives them our rules', async () => {
+    const { host, root } = addHost('open-host', 'open')
+    document.body.appendChild(host)
+    await loadScript()
+    expect(root.querySelector('.panel')!.getAttribute('data-solarize')).toBe(
+      'base3',
+    )
+    expect(hasOurRules(root)).toBe(true)
+  })
+
+  it('reaches closed shadow roots through the extension API', async () => {
+    const { host, root } = addHost('closed-host', 'closed')
+    document.body.appendChild(host)
+    expect(host.shadowRoot).toBeNull()
+    await loadScript()
+    expect(root.querySelector('.panel')!.getAttribute('data-solarize')).toBe(
+      'base3',
+    )
+  })
+
+  it('follows changes inside a shadow root', async () => {
+    const { host, root } = addHost('open-host', 'open')
+    document.body.appendChild(host)
+    await loadScript()
+    root.innerHTML += '<p id="late" style="background-color: #f3f4f6">late</p>'
+    await settle()
+    expect(root.getElementById('late')!.getAttribute('data-solarize')).toBe(
+      'mid',
+    )
+  })
+
+  it('picks up a shadow root attached in place, as the hook announces', async () => {
+    const host = document.createElement('x-card')
+    document.body.appendChild(host)
+    await loadScript()
+    // The component upgrades: no DOM change outside the new root
+    const root = host.attachShadow({ mode: 'open' })
+    root.innerHTML =
+      '<div class="panel" style="background-color: #ffffff">x</div>'
+    host.dispatchEvent(
+      new Event('solarize:shadow-attached', { bubbles: true, composed: true }),
+    )
+    await settle()
+    expect(root.querySelector('.panel')!.getAttribute('data-solarize')).toBe(
+      'base3',
+    )
+  })
+
+  it('cleans shadow roots up when turned off', async () => {
+    const { host, root } = addHost('open-host', 'open')
+    document.body.appendChild(host)
+    await loadScript()
+    saveSettings({ global_settings: globalWith({ enabled: false }) })
+    await settle()
+    expect(root.querySelector('[data-solarize]')).toBeNull()
+    expect(hasOurRules(root)).toBe(false)
   })
 })

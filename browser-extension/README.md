@@ -31,13 +31,21 @@ elements and class or style changes, and work runs in small time-boxed batches
 so pages stay responsive. When neither `<html>` nor `<body>` sets a
 background, the browser's canvas is recolored instead.
 
+Web components are covered too: scans step into shadow roots, open ones and
+closed ones (through `chrome.dom.openOrClosedShadowRoot` in Chrome and
+`openOrClosedShadowRoot` in Firefox), each root is observed, and all of them
+share one adopted copy of the stylesheet. A tiny main-world script,
+`shadow-hook.js`, wraps `attachShadow` to announce roots attached to elements
+already on the page (components upgrading in place), which no observer sees.
+
 Settings live in `chrome.storage.local`, decoded with io-ts codecs; content
 scripts pick up changes through `chrome.storage.onChanged`.
 
 ## Limitations
 
 - Hover and focus backgrounds (`:hover` rules) are not recolored
-- Elements inside shadow DOM are not recolored
+- Safari doesn't load `shadow-hook.js`, so there a web component that
+  upgrades in place is recolored only once its content changes
 - Text colors are unchanged
 
 ## Development

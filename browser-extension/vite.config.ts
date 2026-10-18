@@ -6,7 +6,24 @@ import { defineConfig, loadEnv } from 'vite'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const isContent = process.env.BUILD_TARGET === 'content'
+  // Scripts injected into pages, each built on its own as an IIFE:
+  // content.js (the recoloring) and shadow-hook.js (main-world attachShadow hook)
+  const pageScripts: Record<
+    string,
+    { entry: string; name: string; file: string }
+  > = {
+    content: {
+      entry: 'src/worker/content.ts',
+      name: 'SolarizeContent',
+      file: 'content.js',
+    },
+    hook: {
+      entry: 'src/worker/shadow-hook.ts',
+      name: 'SolarizeShadowHook',
+      file: 'shadow-hook.js',
+    },
+  }
+  const pageScript = pageScripts[process.env.BUILD_TARGET ?? '']
   const target = process.env.TARGET || 'chrome'
   const outDir = resolve(process.cwd(), `dist/${target}`)
 
@@ -44,7 +61,7 @@ export default defineConfig(({ mode }) => {
     },
   })
 
-  if (isContent) {
+  if (pageScript) {
     return {
       plugins: [copyManifestPlugin()],
       define: {
@@ -57,10 +74,10 @@ export default defineConfig(({ mode }) => {
         emptyOutDir: false, // Keep the popup files
         minify: true,
         lib: {
-          entry: resolve(process.cwd(), 'src/worker/content.ts'),
-          name: 'SolarizeContent',
+          entry: resolve(process.cwd(), pageScript.entry),
+          name: pageScript.name,
           formats: ['iife'],
-          fileName: () => 'content.js',
+          fileName: () => pageScript.file,
         },
         rolldownOptions: {
           output: {
