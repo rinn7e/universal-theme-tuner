@@ -31,12 +31,10 @@ elements and class or style changes, and work runs in small time-boxed batches
 so pages stay responsive. When neither `<html>` nor `<body>` sets a
 background, the browser's canvas is recolored instead.
 
-Web components are covered too: scans step into shadow roots, open ones and
-closed ones (through `chrome.dom.openOrClosedShadowRoot` in Chrome and
-`openOrClosedShadowRoot` in Firefox), each root is observed, and all of them
-share one adopted copy of the stylesheet. A tiny main-world script,
-`shadow-hook.js`, wraps `attachShadow` to announce roots attached to elements
-already on the page (components upgrading in place), which no observer sees.
+Web components are covered too, inside open and closed shadow roots, and
+Solarize runs on top of Dark Reader and Damn Center, recoloring what they
+paint. [doc/compatibility.md](doc/compatibility.md) explains how, and why the
+content script is built the way it is.
 
 Settings live in `chrome.storage.local`, decoded with io-ts codecs; content
 scripts pick up changes through `chrome.storage.onChanged`.

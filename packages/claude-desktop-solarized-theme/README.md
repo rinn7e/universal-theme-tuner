@@ -51,7 +51,9 @@ snippet, so later launches are right-click → Inspect Element → run it.
 ## Edit
 
 Change the `--sol-*` values at the top of `theme.css`, then run `pnpm run build`
-in this package and paste the regenerated `apply-theme.snippet.js`.
+in this package and paste the regenerated `apply-theme.snippet.js`. That file is
+generated from `theme.css` by `build.js`, so edit `theme.css` rather than the
+snippet.
 
 ## Revert
 
