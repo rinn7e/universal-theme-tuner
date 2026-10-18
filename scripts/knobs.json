@@ -1,0 +1,16 @@
+{
+  "bg": "#FAF7F2",
+  "editorStep": 0.022,
+  "text": "#0B0B0B",
+  "textMuted": "#7D7D78",
+  "solarizedUi": {
+    "editor": "#FDF6E3",
+    "surface": "#EEE8D5",
+    "border": "#DDD6C1",
+    "tabBar": "#D9D2C2",
+    "inactiveTab": "#D3CBB7",
+    "text": "#657B83",
+    "uiText": "#586E75",
+    "comments": "#93A1A1"
+  }
+}

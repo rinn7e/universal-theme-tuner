@@ -1,0 +1,40 @@
+{
+  "name": "solarized-white",
+  "displayName": "Solarized White",
+  "description": "Solarized Light syntax colors on a clean white UI",
+  "version": "0.0.1",
+  "publisher": "rinn7e",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "label": "Solarized White 1",
+        "uiTheme": "vs",
+        "path": "./themes/solarized-white-1-color-theme.json"
+      },
+      {
+        "label": "Solarized White 2",
+        "uiTheme": "vs",
+        "path": "./themes/solarized-white-2-color-theme.json"
+      },
+      {
+        "label": "Solarized White 3",
+        "uiTheme": "vs",
+        "path": "./themes/solarized-white-3-color-theme.json"
+      },
+      {
+        "label": "Solarized White 4",
+        "uiTheme": "vs",
+        "path": "./themes/solarized-white-4-color-theme.json"
+      }
+    ]
+  }
+}
