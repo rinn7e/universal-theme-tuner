@@ -50,7 +50,7 @@ pnpm run build
 | `scripts/theme.js` | turns knobs and a palette into a theme; shared by the build and the Tuner's live preview |
 | `scripts/build.js` | writes one theme per palette and keeps `package.json`'s theme list in step |
 | `scripts/palette.js` | writes `palette.html`, every color of every theme with the scopes using it |
-| `scripts/solarized-light-upstream.json` | VS Code's Solarized Light, the source of the syntax rules |
+| `scripts/solarized-light-upstream.json` | VS Code's Solarized Light, the source of the syntax rules (MIT, Microsoft, see `LICENSE-vscode`) |
 
 `themes/*.json`, `palette.html` and the `contributes.themes` list in
 `package.json` are generated: change the scripts, `knobs.json` or

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2026 Moremi Vannak
- * SPDX-License-Identifier: GPL-3.0-only
+ * SPDX-License-Identifier: MIT
  */
 import React from 'react'
 import { type Dispatcher } from 'tea-cup-fp'

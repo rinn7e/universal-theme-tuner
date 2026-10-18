@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2026 Moremi Vannak
- * SPDX-License-Identifier: GPL-3.0-only
+ * SPDX-License-Identifier: MIT
  */
 
 // Fired on a host right after the page attaches a shadow root to it, by the

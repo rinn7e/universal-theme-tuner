@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Recolor white and gray backgrounds to Solarized Light, and dark ones to Solarized Dark, on any website.",
-  "license": "GPL-3.0-only",
+  "license": "MIT",
   "packageManager": "pnpm@11.9.0",
   "engines": {
     "node": ">=24"

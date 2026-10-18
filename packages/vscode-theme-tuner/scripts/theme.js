@@ -1,5 +1,6 @@
 // Turns knobs (knobs.json) and a syntax palette (palettes.js) into a theme:
-// - syntax (tokenColors) from VS Code's Solarized Light, with its accents
+// - syntax (tokenColors) from VS Code's Solarized Light (MIT, Microsoft, see
+//   LICENSE-vscode), with its accents
 //   swapped for the palette's shades (palette 1 = unchanged)
 // - UI colors: cream panels in the style of the Claude desktop app
 // Pure: used by build.js to write the theme files and by the tuner for live previews

@@ -1,6 +1,7 @@
 {
   "name": "universal-theme-tuner",
   "private": true,
+  "license": "MIT",
   "description": "Theme tuners and themes for the apps you use: VS Code, the Claude desktop app and websites",
   "packageManager": "pnpm@11.9.0",
   "scripts": {

@@ -54,3 +54,11 @@ pnpm run test    # runs the packages that have tests
 
 Each package also builds on its own, for example
 `pnpm --filter ./packages/vscode-theme-tuner run build`.
+
+## License
+
+[MIT](LICENSE). Two packages also build on others' MIT-licensed work,
+credited in their own notices:
+[`LICENSE-vscode`](packages/vscode-theme-tuner/LICENSE-vscode) (VS Code's
+Solarized Light) and
+[`LICENSE-clay`](packages/claude-desktop-solarized-theme/LICENSE-clay) (Clay).
