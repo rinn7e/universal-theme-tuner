@@ -12,5 +12,12 @@
     "text": "#657B83",
     "uiText": "#586E75",
     "comments": "#93A1A1"
+  },
+  "groovyLambda": {
+    "background": "#151515",
+    "widget": "#32302F",
+    "lineHighlight": "#383432",
+    "raised": "#3C3836",
+    "border": "#45403D"
   }
 }

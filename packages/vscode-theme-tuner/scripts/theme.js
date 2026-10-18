@@ -3,14 +3,19 @@
 //   LICENSE-vscode), with its accents
 //   swapped for the palette's shades (palette 1 = unchanged)
 // - UI colors: cream panels in the style of the Claude desktop app
+// solarizedUi themes keep Solarized Light's own UI instead, and groovyLambda
+// themes are Groovy Lambda's, each with its tones swapped for the knobs (see
+// makeTheme)
 // Pure: used by build.js to write the theme files and by the tuner for live previews
 const fs = require('fs')
 const path = require('path')
 const { solarized } = require('./palettes')
 
-const upstream = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'solarized-light-upstream.json'), 'utf8'),
-)
+const readUpstream = (file) => JSON.parse(fs.readFileSync(path.join(__dirname, file), 'utf8'))
+const upstream = readUpstream('solarized-light-upstream.json')
+// Groovy Lambda (github.com/sheaf/groovy-lambda, MIT, see
+// LICENSE-groovy-lambda), the base of the groovyLambda themes
+const groovyUpstream = readUpstream('groovy-lambda-upstream.json')
 
 // Darken a color by a fraction, keeping its tint
 const shade = (hex, amount) =>
@@ -32,6 +37,17 @@ const solarizedTones = {
   text: '#657B83', // editor text, cursor
   uiText: '#586E75', // sidebar titles, inputs, bold storage keywords
   comments: '#93A1A1', // comments, tag brackets
+}
+
+// Groovy Lambda's background and panel tones, tunable for groovyLambda themes
+// (knobs.groovyLambda): each knob replaces that color wherever Groovy Lambda
+// uses it
+const groovyTones = {
+  background: '#292828', // editor, sidebar, bars, panels, inputs
+  widget: '#32302F', // hover widget, peek view, menu selection
+  lineHighlight: '#383432', // current line, suggest widget
+  raised: '#3C3836', // peek title, word highlight, status bar hover
+  border: '#45403D', // dropdown border, suggest selection, whitespace
 }
 
 // Swaps a color through a hex map, keeping any alpha suffix
@@ -323,9 +339,22 @@ const makeColors = (knobs) => {
   return colors
 }
 
+// groovyLambda: Groovy Lambda as it is, with its tones from knobs.groovyLambda
+const makeGroovyTheme = (knobs, name) => {
+  const tones = { ...groovyTones, ...knobs.groovyLambda }
+  const map = new Map(
+    Object.entries(groovyTones).map(([k, hex]) => [hex, tones[k].toUpperCase()]),
+  )
+  const colors = Object.fromEntries(
+    Object.entries(groovyUpstream.colors).map(([k, v]) => [k, recolor(v, map)]),
+  )
+  return { ...groovyUpstream, name, colors }
+}
+
 // solarizedUi: keep Solarized Light's own UI, with its tones from
 // knobs.solarizedUi (defaults = Solarized exactly) and accents from the palette
-const makeTheme = (knobs, palette, name, { solarizedUi = false } = {}) => {
+const makeTheme = (knobs, palette, name, { solarizedUi = false, groovyLambda = false } = {}) => {
+  if (groovyLambda) return makeGroovyTheme(knobs, name)
   const tokenColors = syntaxFor(palette)
   if (solarizedUi) {
     const tones = { ...solarizedTones, ...knobs.solarizedUi }
@@ -358,4 +387,4 @@ const makeTheme = (knobs, palette, name, { solarizedUi = false } = {}) => {
   }
 }
 
-module.exports = { makeTheme, solarizedTones }
+module.exports = { makeTheme, solarizedTones, groovyTones }

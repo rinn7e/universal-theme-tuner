@@ -55,4 +55,15 @@ const palettes = {
 // original comments) instead of the Solarized White knobs
 const solarizedUi = ['4']
 
-module.exports = { solarized, palettes, solarizedUi }
+// Themes built on Groovy Lambda instead of Solarized, with its tones from
+// knobs.groovyLambda; its syntax colors are its own, so it has no palette
+const groovyLambda = ['black']
+
+// Every theme: one per palette, then the Groovy Lambda ones
+const themeIds = [...Object.keys(palettes), ...groovyLambda]
+
+// Solarized White <n>, except the themes with a name of their own
+const names = { black: 'Groovy Lambda Black' }
+const themeName = (id) => names[id] || `Solarized White ${id}`
+
+module.exports = { solarized, palettes, solarizedUi, groovyLambda, themeIds, themeName }

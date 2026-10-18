@@ -45,6 +45,11 @@
         "label": "Solarized White 4",
         "uiTheme": "vs",
         "path": "./themes/solarized-white-4-color-theme.json"
+      },
+      {
+        "label": "Groovy Lambda Black",
+        "uiTheme": "vs-dark",
+        "path": "./themes/groovy-lambda-black-color-theme.json"
       }
     ]
   }

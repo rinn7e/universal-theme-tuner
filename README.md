@@ -4,7 +4,7 @@ Theme tuners and themes for the apps you use, one package each:
 
 | Package | What it is |
 | --- | --- |
-| [`vscode-theme-tuner`](packages/vscode-theme-tuner) | The Solarized White VS Code themes (1–4) and the Theme Tuner panel that previews color changes live |
+| [`vscode-theme-tuner`](packages/vscode-theme-tuner) | The Solarized White (1–4) and Groovy Lambda Black VS Code themes, and the Theme Tuner panel that previews color changes live |
 | [`claude-desktop-solarized-theme`](packages/claude-desktop-solarized-theme) | Solarized Light for the Claude desktop app, applied as a DevTools snippet |
 | [`solarize-the-website-extension`](packages/solarize-the-website-extension) | Solarize, a Chrome/Firefox/Safari extension that recolors websites with Solarized |
 
@@ -60,5 +60,7 @@ Each package also builds on its own, for example
 [MIT](LICENSE). Two packages also build on others' MIT-licensed work,
 credited in their own notices:
 [`LICENSE-vscode`](packages/vscode-theme-tuner/LICENSE-vscode) (VS Code's
-Solarized Light) and
+Solarized Light),
+[`LICENSE-groovy-lambda`](packages/vscode-theme-tuner/LICENSE-groovy-lambda)
+(Groovy Lambda) and
 [`LICENSE-clay`](packages/claude-desktop-solarized-theme/LICENSE-clay) (Clay).

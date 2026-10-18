@@ -1,8 +1,9 @@
 // Theme Tuner: a panel with color knobs that previews the Solarized White
-// themes live, then saves the values back to scripts/knobs.json and
+// and Groovy Lambda Black themes live, then saves the values back to scripts/knobs.json and
 // scripts/palettes.js and rebuilds the theme files.
 //
-// Live previews are written as theme-scoped overrides ("[Solarized White N]")
+// Live previews are written as theme-scoped overrides ("[Solarized White N]",
+// "[Groovy Lambda Black]")
 // in workbench.colorCustomizations and editor.tokenColorCustomizations; they
 // only exist while tuning and are removed on close, reset and startup.
 const vscode = require('vscode')
@@ -12,8 +13,7 @@ const path = require('path')
 const scripts = path.join(__dirname, 'scripts')
 const knobsPath = path.join(scripts, 'knobs.json')
 const palettesPath = path.join(scripts, 'palettes.js')
-const themeName = (id) => `Solarized White ${id}`
-const isTunerKey = (key) => /^\[Solarized White \d+\]$/.test(key)
+const isTunerKey = (key) => /^\[(Solarized White \d+|Groovy Lambda Black)\]$/.test(key)
 
 // Accent roles shown next to each knob
 const roles = {
@@ -43,22 +43,29 @@ const rebuild = () => {
 const loadKnobs = () => JSON.parse(fs.readFileSync(knobsPath, 'utf8'))
 const loadPalettes = () => fresh(palettesPath).palettes
 const loadSolarizedUi = () => fresh(palettesPath).solarizedUi
+const loadGroovyLambda = () => fresh(palettesPath).groovyLambda
+const loadThemeIds = () => fresh(palettesPath).themeIds
+const themeName = (id) => fresh(palettesPath).themeName(id)
 const loadMakeTheme = () => {
   fresh(palettesPath)
   return fresh(path.join(scripts, 'theme.js')).makeTheme
 }
 
-// The setting that picks the light theme: auto-detect uses the preferred light theme
-const themeSettingKey = () =>
+// The setting that picks a light or dark theme: auto-detect uses the
+// preferred theme of that kind
+const themeSettingKey = (dark) =>
   vscode.workspace.getConfiguration('window').get('autoDetectColorScheme')
-    ? 'preferredLightColorTheme'
+    ? dark
+      ? 'preferredDarkColorTheme'
+      : 'preferredLightColorTheme'
     : 'colorTheme'
 
-// The Solarized White theme in use, or null when another theme is active
+// The tuner's theme in use, or null when another theme is active
 const themeInUse = (ids) => {
-  const name = vscode.workspace.getConfiguration('workbench').get(themeSettingKey())
-  const m = /^Solarized White (\d+)$/.exec(name || '')
-  return m && ids.includes(m[1]) ? m[1] : null
+  const { kind } = vscode.window.activeColorTheme
+  const dark = kind === vscode.ColorThemeKind.Dark || kind === vscode.ColorThemeKind.HighContrast
+  const name = vscode.workspace.getConfiguration('workbench').get(themeSettingKey(dark))
+  return ids.find((id) => themeName(id) === name) || null
 }
 
 // Writes or removes this extension's overrides, leaving the user's own ones alone
@@ -124,16 +131,18 @@ const openTuner = (context) => {
 
   const init = () => {
     const palettes = loadPalettes()
-    const ids = Object.keys(palettes)
+    const ids = loadThemeIds()
     const inUse = themeInUse(ids)
     panel.webview.postMessage({
       type: 'init',
       ids,
       current: inUse || ids[ids.length - 1],
       inUse: Boolean(inUse),
+      names: Object.fromEntries(ids.map((id) => [id, themeName(id)])),
       knobs: loadKnobs(),
       palettes,
       solarizedUi: loadSolarizedUi(),
+      groovyLambda: loadGroovyLambda(),
       roles,
     })
   }
@@ -145,6 +154,7 @@ const openTuner = (context) => {
       if (msg.type === 'preview') {
         const theme = loadMakeTheme()(msg.knobs, msg.palette, themeName(msg.id), {
           solarizedUi: loadSolarizedUi().includes(msg.id),
+          groovyLambda: loadGroovyLambda().includes(msg.id),
         })
         if (previewing && previewing !== msg.id) await setOverrides(previewing, null)
         previewing = msg.id
@@ -153,7 +163,11 @@ const openTuner = (context) => {
       if (msg.type === 'use') {
         await vscode.workspace
           .getConfiguration('workbench')
-          .update(themeSettingKey(), themeName(msg.id), vscode.ConfigurationTarget.Global)
+          .update(
+            themeSettingKey(loadGroovyLambda().includes(msg.id)),
+            themeName(msg.id),
+            vscode.ConfigurationTarget.Global,
+          )
       }
       if (msg.type === 'reset') {
         await clearAllOverrides()
@@ -162,7 +176,8 @@ const openTuner = (context) => {
       }
       if (msg.type === 'save') {
         fs.writeFileSync(knobsPath, JSON.stringify(msg.knobs, null, 2) + '\n')
-        savePalette(msg.id, msg.palette)
+        // Groovy Lambda themes have no palette, only knobs
+        if (msg.palette) savePalette(msg.id, msg.palette)
         rebuild()
         saved = true
         panel.webview.postMessage({ type: 'saved' })
@@ -219,9 +234,9 @@ const tunerHtml = () => {
     <button class="secondary" id="use">Use this theme</button>
   </div>
   <h2>Surfaces &amp; text</h2>
-  <p id="solarized-note" hidden>Solarized Light's own tones: each knob recolors everywhere Solarized uses it.</p>
+  <p id="solarized-note" hidden></p>
   <div id="knobs"></div>
-  <h2>Syntax</h2>
+  <h2 id="syntax">Syntax</h2>
   <div id="accents"></div>
   <div class="bar" style="margin-top:20px">
     <button id="save">Save</button>
@@ -250,6 +265,14 @@ const tunerHtml = () => {
     uiText: ['UI text', 'sidebar titles, inputs, bold const'],
     comments: ['Comments', 'and tag brackets'],
   }
+  // Knobs for themes built on Groovy Lambda (knobs.groovyLambda)
+  const groovyLabels = {
+    background: ['Background', 'editor, sidebar, bars, panels, inputs'],
+    widget: ['Widgets', 'hover widget, peek view, menu selection'],
+    lineHighlight: ['Current line', 'line highlight, suggest widget'],
+    raised: ['Raised', 'peek title, word highlight, status bar hover'],
+    border: ['Borders', 'dropdown border, suggest selection, whitespace'],
+  }
 
   const colorRow = (label, note, value, onChange) => {
     const row = document.createElement('div')
@@ -268,13 +291,18 @@ const tunerHtml = () => {
   }
 
   const render = () => {
-    const ownUi = state.solarizedUi.includes(state.id)
+    const dark = state.groovyLambda.includes(state.id)
+    const ownUi = dark || state.solarizedUi.includes(state.id)
     $('solarized-note').hidden = !ownUi
+    $('solarized-note').textContent = dark
+      ? "Groovy Lambda's own tones: each knob recolors everywhere Groovy Lambda uses it."
+      : "Solarized Light's own tones: each knob recolors everywhere Solarized uses it."
     const k = $('knobs'); k.innerHTML = ''
     if (ownUi) {
-      const tones = state.knobs.solarizedUi
-      for (const key of Object.keys(solarizedLabels)) {
-        k.append(colorRow(solarizedLabels[key][0], solarizedLabels[key][1], tones[key], (v) => { tones[key] = v; changed() }))
+      const tones = dark ? state.knobs.groovyLambda : state.knobs.solarizedUi
+      const labels = dark ? groovyLabels : solarizedLabels
+      for (const key of Object.keys(labels)) {
+        k.append(colorRow(labels[key][0], labels[key][1], tones[key], (v) => { tones[key] = v; changed() }))
       }
     } else {
       for (const key of ['bg', 'text', 'textMuted']) {
@@ -290,6 +318,9 @@ const tunerHtml = () => {
 
     const a = $('accents'); a.innerHTML = ''
     const palette = state.palettes[state.id]
+    // Groovy Lambda keeps its own syntax colors: no palette to tune
+    $('syntax').hidden = !palette
+    if (!palette) return
     for (const name of Object.keys(state.roles)) {
       a.append(colorRow(name, state.roles[name], palette[name], (v) => { palette[name] = v; changed() }))
     }
@@ -302,18 +333,18 @@ const tunerHtml = () => {
   }
 
   $('theme').addEventListener('change', () => { state.id = $('theme').value; render() })
-  $('use').addEventListener('click', () => { vscode.postMessage({ type: 'use', id: state.id }); $('status').textContent = 'Switched to Solarized White ' + state.id })
+  $('use').addEventListener('click', () => { vscode.postMessage({ type: 'use', id: state.id }); $('status').textContent = 'Switched to ' + state.names[state.id] })
   $('save').addEventListener('click', () => { vscode.postMessage({ type: 'save', id: state.id, knobs: state.knobs, palette: state.palettes[state.id] }); $('status').textContent = 'Saving…' })
   $('reset').addEventListener('click', () => vscode.postMessage({ type: 'reset' }))
 
   window.addEventListener('message', ({ data }) => {
     if (data.type === 'init') {
       state = { ...data, id: data.current }
-      $('theme').innerHTML = data.ids.map((id) => '<option value="' + id + '">Solarized White ' + id + '</option>').join('')
+      $('theme').innerHTML = data.ids.map((id) => '<option value="' + id + '">' + data.names[id] + '</option>').join('')
       $('theme').value = state.id
       render()
       $('status').textContent = data.inUse
-        ? 'Editing Solarized White ' + state.id + ' (the theme in use)'
+        ? 'Editing ' + state.names[state.id] + ' (the theme in use)'
         : 'Another theme is active: press "Use this theme" to see the preview'
     }
     if (data.type === 'saved') $('status').textContent = 'Saved to knobs.json and palettes.js, themes rebuilt. Close the panel and reload to load them.'
