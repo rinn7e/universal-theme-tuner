@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solarize Settings</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 320px;
+        background-color: #fdf6e3;
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background-color: #002b36;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/root.tsx"></script>
+  </body>
+</html>

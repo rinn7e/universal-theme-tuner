@@ -1,0 +1,50 @@
+/*
+ * Copyright (C) 2026 Moremi Vannak
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+@import 'tailwindcss';
+
+/* Solarized, the same tokens as Damn Center's Solarized Light theme */
+:root {
+  --color-primary: #2aa198; /* cyan */
+  --color-secondary: #fdf6e3; /* base3: popup background */
+  --color-bg-card: #eee8d5; /* base2: cards */
+  --color-bg-input: #e4ddcb; /* switch track off */
+  --color-border-card: #d3c7a7;
+  --color-border-input: #93a1a1; /* base1 */
+  --color-text-main: #073642; /* base02 */
+  --color-text-muted: #586e75; /* base01 */
+  --color-text-dim: #657b83; /* base00 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-secondary: #002b36; /* base03 */
+    --color-bg-card: #073642; /* base02 */
+    --color-bg-input: #0b4c5e;
+    --color-border-card: #586e75; /* base01 */
+    --color-border-input: #839496; /* base0 */
+    --color-text-main: #fdf6e3; /* base3 */
+    --color-text-muted: #93a1a1; /* base1 */
+    --color-text-dim: #839496; /* base0 */
+  }
+}
+
+@theme {
+  --color-theme-primary: var(--color-primary);
+  --color-theme-secondary: var(--color-secondary);
+  --color-theme-bg-card: var(--color-bg-card);
+  --color-theme-bg-input: var(--color-bg-input);
+  --color-theme-border-card: var(--color-border-card);
+  --color-theme-border-input: var(--color-border-input);
+  --color-theme-text-main: var(--color-text-main);
+  --color-theme-text-muted: var(--color-text-muted);
+  --color-theme-text-dim: var(--color-text-dim);
+}
+
+body {
+  overflow: hidden;
+  background-color: var(--color-secondary);
+  color: var(--color-text-main);
+}
