@@ -9,6 +9,7 @@ import {
   type Tone,
   animatesBackground,
   recolorGradient,
+  scrollbarThumbFor,
   toneFor,
 } from '../common/solarized'
 import {
@@ -84,13 +85,22 @@ const OBSERVE_OPTIONS: MutationObserverInit = {
 
 const isOn = () => modes.light || modes.dark
 
-// All our rules: the tones, the pause for animated reads and one rule per
-// recolored gradient
+// All our rules: the tones, their scrollbars, the pause for animated reads
+// and one rule per recolored gradient
 const styleText = () => {
+  const tones = Object.entries(TONE_COLORS) as [Tone, string][]
   const rules = [
-    ...Object.entries(TONE_COLORS).map(
+    ...tones.map(
       ([tone, color]) =>
         `[${ATTR}="${tone}"]{background-color:${color} !important}`,
+    ),
+    // scrollbar-color inherits, so transparent scrollers inside a recolored
+    // element get its track too. The page scrollbar follows <html>, so when
+    // only <body> is recolored, <html> takes body's. Not !important: a site's
+    // own scrollbar-color still wins
+    ...tones.map(
+      ([tone, color]) =>
+        `[${ATTR}="${tone}"],html:not([${ATTR}]):has(> body[${ATTR}="${tone}"]){scrollbar-color:${scrollbarThumbFor(tone)} ${color}}`,
     ),
     `[${READING_ATTR}]{transition:none !important}`,
     ...[...gradientIds].map(

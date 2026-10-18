@@ -21,6 +21,17 @@ export const DARK_TONES = {
 
 export type Tone = keyof typeof LIGHT_TONES | keyof typeof DARK_TONES
 
+// Scrollbar thumbs, drawn on a track of the element's own tone. On light
+// tones it sits about as far from the track as Chrome's default gray thumb
+// does from its track; on dark tones it is base01
+export const SCROLLBAR_THUMBS = {
+  light: '#cbc3ad',
+  dark: '#586e75',
+} as const
+
+export const scrollbarThumbFor = (tone: Tone): string =>
+  tone in LIGHT_TONES ? SCROLLBAR_THUMBS.light : SCROLLBAR_THUMBS.dark
+
 export const TONE_COLORS: Record<Tone, string> = {
   ...LIGHT_TONES,
   ...DARK_TONES,

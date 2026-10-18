@@ -11,6 +11,7 @@ import {
   lightToneFor,
   parseColor,
   recolorGradient,
+  scrollbarThumbFor,
   toneFor,
 } from '../src/common/solarized'
 
@@ -172,5 +173,14 @@ describe('recolorGradient', () => {
         light,
       ),
     ).toBeNull()
+  })
+})
+
+describe('scrollbarThumbFor', () => {
+  it('picks the light thumb for light tones and base01 for dark ones', () => {
+    expect(scrollbarThumbFor('base3')).toBe('#cbc3ad')
+    expect(scrollbarThumbFor('deep')).toBe('#cbc3ad')
+    expect(scrollbarThumbFor('base03')).toBe('#586e75')
+    expect(scrollbarThumbFor('raised')).toBe('#586e75')
   })
 })

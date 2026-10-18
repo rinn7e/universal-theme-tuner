@@ -76,6 +76,18 @@ stylesheet reaches.
   `attachShadow` and fires `solarize:shadow-attached` on the host. Chrome and
   Firefox 128+ load it; Safari's manifest leaves it out.
 
+## Scrollbars
+
+Each recolored element also gets a `scrollbar-color` with a track of its own
+tone. It is inherited, so transparent scrollers inside get the track too, and
+it is not `!important`, so a site's own `scrollbar-color` wins.
+
+- The page scrollbar takes its colors from `<html>` only. When just `<body>`
+  is recolored, `<html>` takes body's through `:has()`.
+- In Chrome, any `scrollbar-color` other than `auto` turns off
+  `::-webkit-scrollbar` styling, so a site's custom slim scrollbars inside a
+  recolored element become standard ones in Solarized colors.
+
 ## Testing these cases
 
 The jsdom tests in `test/content.test.ts` cover the logic, but jsdom models

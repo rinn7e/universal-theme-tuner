@@ -284,6 +284,17 @@ describe('content script', () => {
     expect(tone('#gray')).toBe('base03')
   })
 
+  it('recolors scrollbars on the tone, with the page scrollbar following body', async () => {
+    await loadScript()
+    const text = document.getElementById(
+      'solarize-extension-style',
+    )!.textContent
+    expect(text).toContain(
+      '[data-solarize="base3"],html:not([data-solarize]):has(> body[data-solarize="base3"]){scrollbar-color:#cbc3ad #fdf6e3}',
+    )
+    expect(text).toContain('scrollbar-color:#586e75 #002b36')
+  })
+
   it('pauses background transitions only while reading', async () => {
     document.body.innerHTML +=
       '<div id="pad" style="transition: width 0.15s, background 0.15s; background-color: #ffffff">pad</div>'
