@@ -50,8 +50,8 @@ snippet, so later launches are right-click → Inspect Element → run it.
 
 ## Edit
 
-Change the `--sol-*` values at the top of `theme.css`, then run
-`npm run build:claude` and paste the regenerated `apply-theme.snippet.js`.
+Change the `--sol-*` values at the top of `theme.css`, then run `pnpm run build`
+in this package and paste the regenerated `apply-theme.snippet.js`.
 
 ## Revert
 

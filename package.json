@@ -1,51 +1,10 @@
 {
-  "name": "solarized-white",
-  "displayName": "Solarized White",
-  "description": "Solarized Light syntax colors on a clean white UI",
-  "version": "0.0.1",
-  "publisher": "rinn7e",
-  "engines": {
-    "vscode": "^1.80.0"
-  },
-  "categories": [
-    "Themes"
-  ],
-  "main": "./extension.js",
-  "activationEvents": [
-    "onStartupFinished"
-  ],
+  "name": "solarized-workspace",
+  "private": true,
+  "description": "Solarized themes and tools: a VS Code theme tuner, a Claude desktop theme and a website extension",
+  "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "build": "node scripts/build.js && node scripts/palette.js",
-    "build:claude": "node claude-desktop/build.js"
-  },
-  "contributes": {
-    "commands": [
-      {
-        "command": "solarizedWhite.tune",
-        "title": "Solarized White: Tune Colors"
-      }
-    ],
-    "themes": [
-      {
-        "label": "Solarized White 1",
-        "uiTheme": "vs",
-        "path": "./themes/solarized-white-1-color-theme.json"
-      },
-      {
-        "label": "Solarized White 2",
-        "uiTheme": "vs",
-        "path": "./themes/solarized-white-2-color-theme.json"
-      },
-      {
-        "label": "Solarized White 3",
-        "uiTheme": "vs",
-        "path": "./themes/solarized-white-3-color-theme.json"
-      },
-      {
-        "label": "Solarized White 4",
-        "uiTheme": "vs",
-        "path": "./themes/solarized-white-4-color-theme.json"
-      }
-    ]
+    "build": "pnpm -r run build",
+    "test": "pnpm -r --if-present run test"
   }
 }

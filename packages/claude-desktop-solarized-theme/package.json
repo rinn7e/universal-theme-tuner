@@ -1,0 +1,9 @@
+{
+  "name": "claude-desktop-solarized-theme",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Solarized Light for the Claude desktop app, applied as a DevTools snippet",
+  "scripts": {
+    "build": "node build.js"
+  }
+}

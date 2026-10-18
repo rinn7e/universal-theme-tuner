@@ -1,5 +1,5 @@
 {
-  "name": "solarize-extension",
+  "name": "solarize-the-website-extension",
   "private": true,
   "version": "1.0.0",
   "description": "Recolor white and gray backgrounds to Solarized Light, and dark ones to Solarized Dark, on any website.",
