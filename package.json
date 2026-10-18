@@ -10,10 +10,20 @@
   "categories": [
     "Themes"
   ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "scripts": {
     "build": "node scripts/build.js && node scripts/palette.js"
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "solarizedWhite.tune",
+        "title": "Solarized White: Tune Colors"
+      }
+    ],
     "themes": [
       {
         "label": "Solarized White 1",
