@@ -70,6 +70,13 @@ html[data-mode="light"] .cds-root:not([data-mode="dark"]):not([data-mode="system
   --cds-fill-ghost-hover: var(--sol-hover);
   --cds-fill-ghost-selected: rgba(223, 202, 136, 0.55);
   --cds-fill-secondary-hover: var(--sol-hover);
+  /* the flat sidebar look and its cards (Claude 3.x), #fafafa and black washes by default */
+  --cds-fizzy-lake-color-sidebar: var(--sol-bg-0);  /* sidebar: base2 */
+  --cds-fizzy-lake-color-card-hover: var(--sol-bg-2);
+  --cds-fizzy-lake-color-card-link: rgba(181, 137, 0, 0.04);
+  --cds-fizzy-lake-color-card-link-hover: rgba(181, 137, 0, 0.08);
+  --cds-fizzy-lake-color-card-link-pressed: rgba(181, 137, 0, 0.12);
+  --cds-fizzy-lake-color-selected-hover: rgba(223, 202, 136, 0.70);
   /* claude.ai's older tokens (HSL triples), still used in a few places */
   --bg-000: 43.8 86.7% 94.1%;                       /* base3 */
   --bg-100: 43.8 86.7% 94.1%;                       /* base3 */
@@ -120,6 +127,12 @@ html[data-mode="light"] .cds-root:not([data-mode="dark"]):not([data-mode="system
   --cds-fill-ghost-hover: var(--sol-hover);
   --cds-fill-ghost-selected: rgba(223, 202, 136, 0.55);
   --cds-fill-secondary-hover: var(--sol-hover);
+  --cds-fizzy-lake-color-sidebar: var(--sol-bg-0);
+  --cds-fizzy-lake-color-card-hover: var(--sol-bg-2);
+  --cds-fizzy-lake-color-card-link: rgba(181, 137, 0, 0.04);
+  --cds-fizzy-lake-color-card-link-hover: rgba(181, 137, 0, 0.08);
+  --cds-fizzy-lake-color-card-link-pressed: rgba(181, 137, 0, 0.12);
+  --cds-fizzy-lake-color-selected-hover: rgba(223, 202, 136, 0.70);
   --bg-000: 43.8 86.7% 94.1%;
   --bg-100: 43.8 86.7% 94.1%;
   --bg-200: 45.6 55.6% 91.2%;

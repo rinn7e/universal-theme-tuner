@@ -55,6 +55,22 @@ in this package and paste the regenerated `apply-theme.snippet.js`. That file is
 generated from `theme.css` by `build.js`, so edit `theme.css` rather than the
 snippet.
 
+## When an app update breaks it
+
+Updates rename or add color variables, and the surfaces using them go back to
+white or gray. To find the new names, run `diagnose.snippet.js` in the
+Console the same way, with the broken surfaces on screen. It copies a JSON
+report to the clipboard:
+
+- `points`: what paints the sidebar, chat, composer and side panels
+- `rootVars`, `sidebarVars`: the color-like variables in use and their values
+- `neutralSurfaces`: every large surface still white or light gray
+- `frameClasses`: the layout class names, to spot renames
+
+Override the new variables in both light blocks of `theme.css` (light, and
+system under `prefers-color-scheme: light`), then rebuild. Claude 3.x, for
+example, paints the sidebar and its cards with `--cds-fizzy-lake-color-*`.
+
 ## Revert
 
 - Now: in the DevTools Console run
@@ -66,7 +82,7 @@ snippet.
 - Per launch: Clay's permanent install (an extension loaded through the
   app's `REACT_PROFILE` React DevTools hook plus a login LaunchAgent) is not
   used here.
-- App updates can rename the `--cds-*` tokens; checked against Claude 2.42304.0.
+- App updates can rename the `--cds-*` tokens; checked against Claude 3.6556.2.
 - Only the app shell is themed: embedded previews and artifacts render in
   their own documents and keep their colors. Parts colored by script rather
   than these variables (possibly the Code tab terminal) may stay stock.
