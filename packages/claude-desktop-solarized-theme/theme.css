@@ -155,7 +155,14 @@ html[data-mode="light"] .cds-root:not([data-mode="dark"]):not([data-mode="system
  * pins with compound selectors (the sidebar and cards set --df-sidebar-bg to
  * white). The web sidebar otherwise paints a 50/50 mix of frame and canvas.
  * These rules repeat that structure under html[data-mode] so they win on
- * specificity. */
+ * specificity.
+ *
+ * Claude 3.x with macOS vibrancy paints the docked sidebar with
+ * --df-sidebar-tint (#fff) at --df-sidebar-tint-share (85-90%) over
+ * transparent, so the blurred desktop shows through as a pale gray. Its rule
+ * (html[data-cds-fizzy-lake~="color"]...[data-mode="light"] ...) outranks
+ * these selectors, so the tint is pinned with !important: solid base2, like
+ * the collapsed sidebar. */
 html[data-mode="light"] .dframe-root,
 html[data-mode="light"] .dframe-root .dframe-sidebar,
 html[data-mode="light"] .dframe-root[data-variant] .dframe-sidebar,
@@ -172,6 +179,8 @@ html[data-mode="light"] .dframe-root .df-session-list[data-list-section] {
   --df-bg-page-hsl: 45.6 42.4% 88.4%;               /* base2 */
   --df-sidebar-bg: var(--sol-bg-0);
   --df-web-sidebar-bg: var(--sol-bg-0);
+  --df-sidebar-tint: var(--sol-bg-0) !important;    /* docked sidebar, white by default */
+  --df-sidebar-tint-share: 100% !important;         /* opaque, no desktop showing through */
   --df-hover: var(--sol-hover);
   --df-selected: var(--sol-selected);
   --df-selected-base: var(--sol-selected);
@@ -193,6 +202,8 @@ html[data-mode="light"] .dframe-root .df-session-list[data-list-section] {
   --df-bg-page-hsl: 45.6 42.4% 88.4%;
   --df-sidebar-bg: var(--sol-bg-0);
   --df-web-sidebar-bg: var(--sol-bg-0);
+  --df-sidebar-tint: var(--sol-bg-0) !important;
+  --df-sidebar-tint-share: 100% !important;
   --df-hover: var(--sol-hover);
   --df-selected: var(--sol-selected);
   --df-selected-base: var(--sol-selected);

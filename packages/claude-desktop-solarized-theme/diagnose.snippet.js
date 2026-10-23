@@ -73,6 +73,43 @@
   }
   report.frameClasses = [...frameClasses].sort().slice(0, 300)
 
+  // Every sidebar, docked or overlaid, with its color and the rules that set
+  // its background or the variables feeding it (the source of a wrong shade)
+  const ruleList = []
+  const collect = (rules) => {
+    for (const rule of rules) {
+      if (rule.selectorText && rule.style) ruleList.push(rule)
+      if (rule.cssRules) collect(rule.cssRules)
+    }
+  }
+  for (const sheet of document.styleSheets) {
+    try { collect(sheet.cssRules) } catch { /* cross-origin sheet */ }
+  }
+  const feeds = /^(background|--df-sidebar|--df-web-sidebar|--cds-fizzy|--cds-surface)/
+  report.sidebars = [...document.querySelectorAll('.dframe-sidebar, aside')].map((el) => {
+    const style = getComputedStyle(el)
+    const rules = []
+    for (const rule of ruleList) {
+      let matches = false
+      try { matches = el.matches(rule.selectorText) } catch { /* selector with pseudo-elements */ }
+      if (!matches) continue
+      const decls = [...rule.style].filter((p) => feeds.test(p)).map((p) => `${p}: ${rule.style.getPropertyValue(p).trim()}`)
+      if (decls.length) rules.push({ selector: rule.selectorText.slice(0, 300), decls })
+    }
+    const { width, height } = el.getBoundingClientRect()
+    return {
+      class: classOf(el),
+      data: Object.fromEntries(Object.entries(el.dataset)),
+      size: `${Math.round(width)}x${Math.round(height)}`,
+      bg: style.backgroundColor,
+      bgImage: style.backgroundImage.slice(0, 200),
+      tint: style.getPropertyValue('--df-sidebar-tint').trim(),
+      tintShare: style.getPropertyValue('--df-sidebar-tint-share').trim(),
+      tintMixed: style.getPropertyValue('--df-sidebar-tint-mixed').trim(),
+      rules,
+    }
+  })
+
   // Large surfaces still painted white or a light neutral gray: what the
   // theme missed, wherever it sits (sample points can miss panes when docked
   // DevTools shrinks the window)
