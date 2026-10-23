@@ -59,11 +59,13 @@ snippet.
 
 Updates rename or add color variables, and the surfaces using them go back to
 white or gray. To find the new names, run `diagnose.snippet.js` in the
-Console the same way, with the broken surfaces on screen. It copies a JSON
-report to the clipboard:
+Console the same way, with the broken surfaces on screen and DevTools
+undocked (docked DevTools narrows the window, which collapses the sidebar).
+It copies a JSON report to the clipboard:
 
 - `points`: what paints the sidebar, chat, composer and side panels
 - `rootVars`, `sidebarVars`: the color-like variables in use and their values
+- `sidebars`: each sidebar's color, tint and the rules that set them
 - `neutralSurfaces`: every large surface still white or light gray
 - `frameClasses`: the layout class names, to spot renames
 
